@@ -64,8 +64,8 @@ module Feedjira
       end
     end
 
-    def self.fetch_and_parse(url)
-      response = connection(url).get
+    def self.fetch_and_parse(url, headers = [])
+      response = connection(url, headers).get
       error_message = "Fetch failed - #{response.status}"
       raise FetchFailure, error_message unless response.success?
 
@@ -76,10 +76,13 @@ module Feedjira
       feed
     end
 
-    def self.connection(url)
+    def self.connection(url, headers)
       Faraday.new(url: url) do |conn|
         conn.use FaradayMiddleware::FollowRedirects, limit: 3
         conn.adapter :net_http
+        headers.each do |header|
+          conn[header[0]] = header[1]
+        end
       end
     end
   end
